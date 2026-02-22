@@ -1,6 +1,6 @@
 package com.apibank.controller;
 
-import com.apibank.entity.Transaccion;
+import com.apibank.dto.TransaccionResponseDTO;
 import com.apibank.service.TransaccionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,7 +23,7 @@ public class ReporteController {
      * Equivalent to Node.js GET /reportes + reporteTransacciones controller.
      */
     @GetMapping("/transacciones")
-    public ResponseEntity<List<Transaccion>> reporteTransacciones(
+    public ResponseEntity<List<TransaccionResponseDTO>> reporteTransacciones(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
 
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hasta,

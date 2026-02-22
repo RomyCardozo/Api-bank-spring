@@ -2,6 +2,7 @@ package com.apibank.service;
 
 import com.apibank.dto.TransaccionBatchItemDTO;
 import com.apibank.entity.Transaccion;
+import com.apibank.dto.TransaccionResponseDTO;
 import com.apibank.repository.TransaccionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ public class TransaccionService {
      * Prisma.
      */
     @Transactional(readOnly = true)
-    public Page<Transaccion> obtenerTransacciones(
+    public org.springframework.data.domain.Page<TransaccionResponseDTO> obtenerTransacciones(
             LocalDateTime desde,
             LocalDateTime hasta,
             Long cuentaId,
@@ -48,7 +49,8 @@ public class TransaccionService {
         int pageNumber = (limit > 0) ? offset / limit : 0;
 
         Pageable pageable = PageRequest.of(pageNumber, limit, Sort.by(Sort.Direction.DESC, "fecha"));
-        return transaccionRepository.findWithFilters(desde, hasta, cuentaId, pageable);
+        return transaccionRepository.findWithFilters(desde, hasta, cuentaId, pageable)
+            .map(this::mapToDTO);
     }
 
     /**
@@ -57,7 +59,7 @@ public class TransaccionService {
      * Equivalent to prisma.transacciones.createMany({ data }) in Node.js.
      */
     @Transactional
-    public List<Transaccion> crearBatchTransacciones(List<TransaccionBatchItemDTO> items) {
+    public List<TransaccionResponseDTO> crearBatchTransacciones(List<TransaccionBatchItemDTO> items) {
         List<Transaccion> entities = items.stream().map(dto -> {
             Transaccion t = new Transaccion();
             t.setCuentaId(dto.getCuenta_id());
@@ -66,6 +68,18 @@ public class TransaccionService {
             return t;
         }).collect(Collectors.toList());
 
-        return transaccionRepository.saveAll(entities);
+        List<Transaccion> saved = transaccionRepository.saveAll(entities);
+        return saved.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    private TransaccionResponseDTO mapToDTO(Transaccion t) {
+        if (t == null) return null;
+        return new TransaccionResponseDTO(
+                t.getId(),
+                t.getCuentaId(),
+                t.getTipo(),
+                t.getMonto(),
+                t.getFecha()
+        );
     }
 }

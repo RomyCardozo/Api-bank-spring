@@ -22,9 +22,9 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, Long> 
      */
     @Query("""
             SELECT t FROM Transaccion t
-            WHERE (:desde IS NULL OR t.fecha >= :desde)
-              AND (:hasta IS NULL OR t.fecha <= :hasta)
-              AND (:cuentaId IS NULL OR t.cuentaId = :cuentaId)
+            WHERE t.fecha >= COALESCE(:desde, t.fecha)
+              AND t.fecha <= COALESCE(:hasta, t.fecha)
+              AND t.cuentaId = COALESCE(:cuentaId, t.cuentaId)
             ORDER BY t.fecha DESC
             """)
     Page<Transaccion> findWithFilters(

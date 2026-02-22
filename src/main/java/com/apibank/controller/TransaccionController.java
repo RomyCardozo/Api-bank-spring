@@ -58,8 +58,8 @@ public class TransaccionController {
      */
     @PostMapping("/batch")
     public ResponseEntity<Map<String, Object>> batchInsert(@Valid @RequestBody BatchRequestDTO request) {
-        List<Transaccion> saved = transaccionService.crearBatchTransacciones(request.getTransacciones());
+        var saved = transaccionService.crearBatchTransacciones(request.getTransacciones());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("count", saved.size()));
+                .body(Map.of("count", saved.size(), "items", saved));
     }
 }

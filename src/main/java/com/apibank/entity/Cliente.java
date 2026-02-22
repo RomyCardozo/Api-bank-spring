@@ -28,7 +28,7 @@ public class Cliente {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "cliente", fetch = FetchType.EAGER)
     private List<Cuenta> cuentas;
 
     @PrePersist

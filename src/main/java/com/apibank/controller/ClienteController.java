@@ -1,5 +1,6 @@
 package com.apibank.controller;
 
+import com.apibank.dto.ClienteResponseDTO;
 import com.apibank.entity.Cliente;
 import com.apibank.service.ClienteService;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +19,20 @@ public class ClienteController {
 
     /** POST /api/v1/clientes */
     @PostMapping
-    public ResponseEntity<Cliente> crearCliente(@RequestBody Cliente cliente) {
-        Cliente nuevo = clienteService.crearCliente(cliente);
+    public ResponseEntity<ClienteResponseDTO> crearCliente(@RequestBody Cliente cliente) {
+        ClienteResponseDTO nuevo = clienteService.crearCliente(cliente);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 
     /** GET /api/v1/clientes */
     @GetMapping
-    public ResponseEntity<List<Cliente>> obtenerClientes() {
+    public ResponseEntity<List<ClienteResponseDTO>> obtenerClientes() {
         return ResponseEntity.ok(clienteService.obtenerClientes());
     }
 
     /** GET /api/v1/clientes/{id} */
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> obtenerClientePorId(@PathVariable Integer id) {
+    public ResponseEntity<ClienteResponseDTO> obtenerClientePorId(@PathVariable Integer id) {
         return ResponseEntity.ok(clienteService.obtenerClientePorId(id));
     }
 }

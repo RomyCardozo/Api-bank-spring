@@ -10,7 +10,6 @@ com\apibank\service\ClienteService.class
 com\apibank\dto\TransferenciaResponseDTO.class
 com\apibank\repository\CuentaRepository.class
 com\apibank\service\TipoCuentaService.class
-com\apibank\controller\ReporteController.class
 com\apibank\dto\ErrorResponseDTO.class
 com\apibank\service\SetupService.class
 com\apibank\controller\TransaccionController.class

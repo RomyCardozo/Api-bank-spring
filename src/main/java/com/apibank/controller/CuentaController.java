@@ -1,7 +1,7 @@
 package com.apibank.controller;
 
 import com.apibank.dto.CuentaRequestDTO;
-import com.apibank.entity.Cuenta;
+import com.apibank.dto.CuentaResponseDTO;
 import com.apibank.service.CuentaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ public class CuentaController {
 
     /** POST /api/v1/cuentas */
     @PostMapping
-    public ResponseEntity<Cuenta> crearCuenta(@RequestBody CuentaRequestDTO dto) {
+    public ResponseEntity<CuentaResponseDTO> crearCuenta(@RequestBody CuentaRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cuentaService.crearCuenta(dto));
     }
 
@@ -30,10 +30,10 @@ public class CuentaController {
      * Supports optional ?cliente_id= query param to filter by client.
      */
     @GetMapping
-    public ResponseEntity<List<Cuenta>> listarCuentas(
+    public ResponseEntity<List<CuentaResponseDTO>> listarCuentas(
             @RequestParam(name = "cliente_id", required = false) Integer clienteId) {
 
-        List<Cuenta> result = (clienteId != null)
+        List<CuentaResponseDTO> result = (clienteId != null)
                 ? cuentaService.obtenerCuentasPorCliente(clienteId)
                 : cuentaService.obtenerCuentas();
 
@@ -42,7 +42,7 @@ public class CuentaController {
 
     /** GET /api/v1/cuentas/{id} */
     @GetMapping("/{id}")
-    public ResponseEntity<Cuenta> obtenerCuentaById(@PathVariable Long id) {
+    public ResponseEntity<CuentaResponseDTO> obtenerCuentaById(@PathVariable Long id) {
         return ResponseEntity.ok(cuentaService.obtenerCuentaPorId(id));
     }
 
@@ -64,7 +64,7 @@ public class CuentaController {
      * Equivalent to Node.js PATCH /cuentas/:id (actualizar saldo)
      */
     @PutMapping("/{id}/saldo")
-    public ResponseEntity<Cuenta> actualizarSaldo(
+    public ResponseEntity<CuentaResponseDTO> actualizarSaldo(
             @PathVariable Long id,
             @RequestBody Map<String, BigDecimal> body) {
 
