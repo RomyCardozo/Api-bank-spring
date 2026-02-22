@@ -4,7 +4,7 @@ import { check, group, sleep } from "k6";
 // =========================
 // Config por ENV
 // =========================
-const BASE_URL = __ENV.BASE_URL || "http://localhost:3000/api/v1";
+const BASE_URL = __ENV.BASE_URL || "http://localhost:8080/api/v1";
 
 // Rango de fechas para filtros
 const DESDE = __ENV.DESDE || "2026-01-01";
