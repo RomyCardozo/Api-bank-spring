@@ -11,6 +11,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.persistence.PessimisticLockException;
 import java.util.stream.Collectors;
@@ -87,6 +88,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponseDTO("El cuerpo de la solicitud es inválido o está malformado"));
     }
+
+        // -------------------------------------------------------
+        // 404 – Static resource or route not found
+        // -------------------------------------------------------
+        @ExceptionHandler(NoResourceFoundException.class)
+        public ResponseEntity<ErrorResponseDTO> handleNoResourceFound(NoResourceFoundException ex) {
+                log.info("Resource not found: {}", ex.getResourcePath());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(new ErrorResponseDTO("Recurso no encontrado"));
+        }
 
     // -------------------------------------------------------
     // 500 – Generic fallback

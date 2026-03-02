@@ -1,0 +1,118 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: bank-api-spring-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${PG_DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${PG_DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${PG_DB_NAME:-bank_bd_spring}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    shm_size: "2gb"
+    command: >
+      postgres
+      -c max_connections=500
+      -c shared_buffers=2GB
+      -c effective_cache_size=6GB
+      -c random_page_cost=1.1
+      -c bgwriter_lru_maxpages=100
+      -c deadlock_timeout=1s
+      -c work_mem=32MB
+      -c maintenance_work_mem=1GB
+      -c wal_buffers=64MB
+      -c checkpoint_timeout=15min
+      -c max_wal_size=4GB
+      -c checkpoint_completion_target=0.9
+      -c log_min_duration_statement=250
+      -c idle_in_transaction_session_timeout=10s
+      -c statement_timeout=15000
+      -c synchronous_commit=off
+      -c max_parallel_workers_per_gather=4
+      -c max_worker_processes=8
+      -c max_parallel_workers=8
+      -c autovacuum_vacuum_scale_factor=0.05
+      -c autovacuum_analyze_scale_factor=0.02
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: "8g"
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: bank-api-spring-pgbouncer
+    restart: always
+    environment:
+      DB_USER: ${PG_DB_USERNAME:-postgres}
+      DB_PASSWORD: ${PG_DB_PASSWORD:-postgres}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${PG_DB_NAME:-bank_bd_spring}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 5000
+      DEFAULT_POOL_SIZE: 300
+      AUTH_TYPE: plain
+    ports:
+      - "6433:5432"
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "512m"
+
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    container_name: bank-api-spring-queue
+    restart: always
+    ports:
+      - "6390:6379"
+    command: valkey-server --maxmemory 512mb --maxmemory-policy noeviction --appendonly yes
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1g"
+
+  app:
+    build: .
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1g"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pgbouncer:5432/${PG_DB_NAME:-bank_bd_spring}
+      SPRING_DATASOURCE_USERNAME: ${PG_DB_USERNAME:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${PG_DB_PASSWORD:-postgres}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      SERVER_TOMCAT_THREADS_MIN_SPARE: ${SERVER_TOMCAT_THREADS_MIN_SPARE:-4}
+      SERVER_TOMCAT_THREADS_MAX: ${SERVER_TOMCAT_THREADS_MAX:-200}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -Djava.security.egd=file:/dev/./urandom}
+    depends_on:
+      pgbouncer:
+        condition: service_started
+      postgres:
+        condition: service_started
+      valkey:
+        condition: service_started
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "${VPS_PORT:-8080}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
